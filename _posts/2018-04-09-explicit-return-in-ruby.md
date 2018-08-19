@@ -3,76 +3,115 @@ layout: post
 title: Explicit Return in Ruby
 ---
 
-#### (or Perl got return right)
+#### (or, the Perl community got return right)
 
 In a Ruby function, the result of the last expression becomes the return value for that function.
 
-    def demonstrate
-      "I'm your return value"
-    end
+```ruby
+  def demonstrate
+    "I'm your return value"
+  end
+```
 
 That is, unless there are any explicit return statements that execute before the end of the function.
 
-    def has_a_guard_clause(value)
-      return if value.nil?
-      evaluate(value)
-    end
+```ruby
+  def has_a_guard_clause(value)
+    return if value.nil?
+    evaluate(value)
+  end
+```
 
-While you can use an explicit return statement as the last statement in a function, 
+While you can use an explicit return statement as the last statement in a function, e.g.
 
-    def encode(value)
-      outcome = transform(value)
-      return outcome.success?
-    end
+```ruby
+  def encode(value)
+    outcome = transform(value)
+    return outcome.success?
+  end
+```
 
 the Ruby community has come down in favour of not doing this. This is evidenced by the default rules applied by the Ruby linting tool Rubocop.
 
-https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Style/RedundantReturn
+[https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Style/RedundantReturn](https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Style/RedundantReturn)
 
 Perl has the same behaviour as Ruby regarding the optional use of return.
 
-However, the Perl community came down on the side of using the explicit return. This is the default rule applied by the Perl linting tool PerlCritic.
+However, the Perl community came down on the side of using an explicit return. This is the default rule applied by the Perl linting tool PerlCritic.
 
-https://metacpan.org/pod/distribution/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/RequireFinalReturn.pm
+[https://metacpan.org/pod/distribution/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/RequireFinalReturn.pm](https://metacpan.org/pod/distribution/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/RequireFinalReturn.pm)
 
-I'm here to suggest that the Perl community got it right.
+I'm going to suggest that the Perl community got it right.
 
-In Ruby, we don't have a return type in our method signature, so we can't indicate that a function is meant to return something, or that it doesn't. Unlike other languages
+A Ruby (or Perl) function will **always** return something, but it may not be intended for that something to be used.
 
-  Example from Java or C#
+There are three reasons I think it's valuable to have an explicit return.
 
-A Ruby (or Perl) function will always return something, but it may not be intended for that something to be used.
+1. Ruby has no static type checking to catch accidental return value errors
+2. Being explicit is good information for subsequent coders
+3. It can prevent accidental information leakage
 
-  Example in IRB showing a procedure
+Languages with static types allow us to declare the expailcit return type, or the absence of a return value. A static type system would catch at compile time if you forgot to return something, or that it was the wrong type. Quite helpful!
 
-Perhaps the function name can help indicate that nothing is returned 
+This method returns a value of type `decimal`
 
-  Examples
+```csharp
+    public decimal Gradient(decimal rise, decimal run)
+    {
+        return rise / run;
+    }
+```
 
-However this may not be enough.
+This method returns nothing, as indicated by the `void` return type.
 
-So we can help our colleagues, successors, and ourselves by making things explicit.
+```csharp
+    public void Log(string message)
+    {
+        logger.log(timestamp + message);
+    }
+```
 
-We can do this by using the explicit return keyword to indicate that this function does have a return value intended for use
+In Ruby, we have neither a static type system, nor a return type in our method signature, so we can't indicate that a function is meant to return something, or that it doesn't. Without this, we're left with options like:
 
-  Example
+- Use documentation to indicate the method's return type, or lack thereof, and/or
+- Use the method name to help indicate that something (and possibly what) is being returned, and/or
+- Rely on users of our code to inspect the source code for themselves and determine what is being returned.
 
-Or we can omit it as an indicator that nothing of value is emitted by this function.
+One way we can help our colleagues, successors, and our future selves is by being explicit in the source code at least. We can do this by using the return keyword to indicate that a function does have a return value intended for use.
 
-  Example
+```ruby
+  def current_time
+    return Time.now
+  end
 
-By following this guideline we can have a kind of contract about what can be expected from our function. This works if people can look at your source code.
+  # No return keyword, so nothing notable being returned...
+  def Log(string message)
+    logger.log(timestamp + message);
+  end
+```
 
-Otherwise you can use documentation to indicate return value, or lack there of.
+The PerlCritic description for the explicit return rule goes further, it suggests we should always have a return statement, even if that is to return `nil` (`undef` in Perl). So the 2nd example becomes:
 
-The PerlCritic description for the explicit return rule suggests goes further, it suggests we should always have a return statement, even if that just returns nil.
+```ruby
+  def Log(string message)
+    logger.log(timestamp + message);
+    return nil
+  end
+```
 
-The reasoning they give is somethings we saw a little earlier. It is the potential for a function with no intended return value to accidentally leak information. Here's another example.
+Again, this is explicit. It indicates that we should not expect a useful value from this function, whereas the previous version might leave you wondering if `logger.log(...)` might have some value.
 
-  Example
+There is another good reason that the PerlCritic guides gives in favour of always having return. It is the potential for a function with no intended return value to accidentally leak information. Here's another example.
+
+```ruby
+  def add_to_group(email)
+    group_email_list << email
+  end
+```
+
+`group_email_list` is going to leak here.
 
 Now admittedly this is quite a contrived example, but you get the idea, and I'm sure with some imagination you can envisage your library being used in unexpected ways where it emits information you didn't intend.
 
 So, I'd advocate that we, the Ruby community, should also embrace the use of an explicit return statement. To ensure our intention is clear, and that we are returning the thing we intended.
 
-http://search.cpan.org/~thaljef/Perl-Critic-1.123/lib/Perl/Critic/Policy/Subroutines/RequireFinalReturn.pm
