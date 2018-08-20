@@ -7,11 +7,11 @@ A recent bug hunt led me to discover the issue was caused by some well-meaning a
 
 ```ruby
 unless RUBY_VERSION =~ /^1\.9/
-  # supply a method not available before Ruby 1.9.x
+  # supply a method not available before Ruby 1.9.x via monkey-patch
 end
 ```
 
-So when Ruby 2.x became prevalent, the above code failed the check and supplied a method that was actually incompatible with Ruby versions >= 1.9.x.
+So as Ruby 2.x became prevalent, the above code failed the check and supplied a method that was actually incompatible with Ruby versions >= 1.9.x.
 
 I've also seen versions treated as decimal numbers and then compared, e.g.
 
@@ -40,6 +40,6 @@ Decimal `1.10` is actually `1.1` (dropping the insignificant 0), and is therefor
 
 The other problem is if you wanted to have [semantic versioning](https://semver.org/) with three version indicator values- "major version", "minor version", and "patch version". E.g. `1.9.3`. We can't use a decimal here.
 
-The solution is not treat a version number as anything like a decimal. It is three distinct whole number values grouped together, needing a comparison at each level.
+The solution is not to treat a version number as anything like a decimal. It is three distinct whole number values, grouped together, needing a comparison at each level.
 
 If you are using Ruby, you can use the [Gem::Version](https://ruby-doc.org/stdlib-2.5.0/libdoc/rubygems/rdoc/Gem/Version.html) library, it does the right thing.
