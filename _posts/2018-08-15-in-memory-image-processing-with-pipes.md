@@ -27,7 +27,7 @@ Apparently you can, using:
 
     ffmpeg -i video.mpg -f image2pipe pipe:1
 
-This forces the output format to be images streamed to a pipe, and specifies we want it sent to pipe:1, which is stdout.
+This forces the output format to be images streamed to a pipe, and specifies we want it sent to pipe:1, which is [stdout](https://en.wikipedia.org/wiki/Standard_streams#Standard_output_(stdout)).
 
 That means we can use [IO.popen](https://ruby-doc.org/core-2.5.0/IO.html#method-c-popen) in Ruby to read this stream. 
 
@@ -37,7 +37,7 @@ IO.popen(ffmpeg_command) do |data|
 end
 ```
 
-To distinguish one image from another in the stream, I had to do a little research on the JPEG format. From that I discovered that JPEG/JFIF format starts with the bytes `0xFF 0xD8` and ends with the bytes `0xFF 0xD9`.
+To distinguish one image from another in the stream, I had to do a little research on the JPEG format. From that I discovered that the JPEG/JFIF format starts with the bytes `0xFF 0xD8` and ends with the bytes `0xFF 0xD9`.
 
 With all that, I could write a quick script to read the stream of images and distinguish them from each other:
 
