@@ -51,7 +51,7 @@ There are three reasons I think it's valuable to have an explicit return.
 2. Being explicit is good information for subsequent coders
 3. It can prevent accidental information leakage
 
-Languages with static types allow us to declare the expailcit return type, or the absence of a return value. A static type system would catch at compile time if you forgot to return something, or that it was the wrong type. Quite helpful!
+Languages with static types allow us to declare the explicit return type, or the absence of a return value. A static type system would catch at compile time if you forgot to return something, or that it was the wrong type. Quite helpful!
 
 This method returns a value of type `decimal`
 
@@ -113,5 +113,5 @@ There is another good reason that the PerlCritic guides gives in favour of alway
 
 Now admittedly this is quite a contrived example, but you get the idea, and I'm sure with some imagination you can envisage your library being used in unexpected ways where it emits information you didn't intend.
 
-So, I'd advocate that we, the Ruby community, should also embrace the use of an explicit return statement. To ensure our intention is clear, and that we are returning the thing we intended.
+So, I'd advocate that we, the Ruby community, should also embrace the use of an explicit return statement. To ensure our intention is clear, and to ensure we are returning the thing we intended.
 
