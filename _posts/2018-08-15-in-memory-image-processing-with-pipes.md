@@ -7,9 +7,9 @@ At RubyConfAU 2018 presenter Michael Morris demonstrated [Kartalytics](https://g
 
 It's both an amusing and clever project, and after the conference I was eager to look into the detail of how they were capturing the images.
 
-In short, they use an HDMI to Ethernet device which sends UDP packets to a Raspberry Pi. They use [ffmpeg](https://ffmpeg.org/) to capture screenshots from the video stream at a rate of 5 frames per second, writing these images to the SD card on the Raspberry Pi. Another process iterates over these images, reading them off the SD card and processing them to extract in-game information.
+In short, they use an HDMI to Ethernet device which sends a video stream as UDP packets to a Raspberry Pi. They use [ffmpeg](https://ffmpeg.org/) to capture screenshots from the video stream at a rate of 5 frames per second, writing these images to the SD card on the Raspberry Pi. Another process iterates over these images, reading them off the SD card and processing them to extract in-game information.
 
-What they did, writing the files to the SD and then reading again them with a separate process is exactly what I would have done with a quick side project. However that block device I/O can have a penalty.
+What they did, writing the files to the SD and then reading them again with a separate process, is exactly what I would have done with a quick side project. However that block device I/O can have a penalty.
 
 So I decided to try some experiments to bypass the SD card as a little side project.
 
