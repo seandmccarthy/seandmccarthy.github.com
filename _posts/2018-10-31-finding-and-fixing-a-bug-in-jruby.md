@@ -119,7 +119,7 @@ private static RubyBigDecimal cannotBeCoerced(ThreadContext context, IRubyObject
 
 This method contains the text of the error message received from the failed subtraction that started this investigation. So if `must` is `true`, then the error is raised. Recall that the `op_plus` has the `must` value as `false`. 
 
-Falling all the way back up the call stack, we see that if `must` is instead `false`, then `getVpValue` and subsequently `getVpValueWithPrec` will return `null`. Thus the `val` passed to `subInternal` will be `null`. 
+Returning all the way back up the call stack to `op_minus`, we see that if `must` is changed to `false`, then `getVpValue` and subsequently `getVpValueWithPrec` will return `null`. Thus the `val` passed to `subInternal` will be `null`.
 
 ```java
 private IRubyObject subInternal(ThreadContext context, RubyBigDecimal val, IRubyObject b, int prec) {
@@ -128,9 +128,9 @@ private IRubyObject subInternal(ThreadContext context, RubyBigDecimal val, IRuby
 }
 ```
 
-With `val` being null, the `callCoerced` method would actually be called in the first line of `subInternal`, instead of an exception being raised.
+With `val` being `null`, the `callCoerced` method would actually be called in the first line of `subInternal`, instead of an exception being raised.
 
-The fix is to change that `must` value:
+The fix is to change that `must` value, as seen in this diff:
 
 ```bash
 diff --git a/core/src/main/java/org/jruby/ext/bigdecimal/RubyBigDecimal.java b/core/src/main/java/org/jruby/ext/bigdecimal/RubyBigDecimal.java
@@ -202,7 +202,9 @@ That 4th parameter is `err` and that gets passed to [getCoerced](https://github.
 
 If there is no `coerce` method provided, an exception is raised. This exception is swallowed unless the `error` parameter (which is the `err` parameter from `callCoerced`) is `true`.
 
-In the case of the `NullValue` example from the beginning of this post, if you remove the `coerce` method (and the `method_missing` one) then the outcome would look like this:
+In the case of the `NullValue` example from the beginning of this post we can remove the `coerce` method (and the `method_missing` one) to see what happens.
+
+Firstly addition:
 
 ```
 irb(main):001:0> load './null_value.rb'
@@ -217,14 +219,21 @@ Traceback (most recent call last):
         2: from (irb):2:in `evaluate'
         1: from org/jruby/ext/bigdecimal/RubyBigDecimal.java:1039:in `+'
 TypeError (NullValue can't be coerced into BigDecimal)
+```
+
+This fails with an exception as expected, because there is no `coerce` method provided.
+
+However, looking at subtraction:
+
+```
 irb(main):003:0> BigDecimal(1) - NullValue.new
 => nil
 ```
 
-Addition fails with an exception as expected, subtraction fails quietly.
+This fails quietly.
 
-To make it consistent, the invokation of `callCoerced` in `subInternal` needs to change to the 4 parameter version with an `err` value of `true`, just like `addInternal`.
+To make it consistent, and correct, the invokation of `callCoerced` in `subInternal` needs to change to the 4 parameter version with an `err` value of `true`, just like `addInternal`.
 
-The full PR for these fixes is https://github.com/jruby/jruby/pull/5391
+The full PR for these fixes can be found at [https://github.com/jruby/jruby/pull/5391](https://github.com/jruby/jruby/pull/5391).
 
 As a final thought, it's often interesting how much effort can go into what ultimately is a tiny code change.
